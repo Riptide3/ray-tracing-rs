@@ -14,6 +14,7 @@ pub fn run() -> io::Result<()> {
     let mut contents = String::from(part0);
 
     for j in (0..image_height).rev() {
+        eprint!("\rScanlines remaining: {} ", j);
         for i in 0..image_width {
             let j = j as f64;
             let i = i as f64;
@@ -34,5 +35,6 @@ pub fn run() -> io::Result<()> {
     }
 
     fs::write(FILENAME, contents.as_bytes())?;
+    eprintln!("\nDone.");
     Ok(())
 }
