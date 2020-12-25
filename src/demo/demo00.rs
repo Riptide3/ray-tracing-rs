@@ -1,7 +1,7 @@
 use std::fs;
 use std::io;
 
-const FILENAME: &'static str = "pic/00.ppm";
+const FILENAME: &str = "pic/00.ppm";
 
 pub fn run() -> io::Result<()> {
     // Image
@@ -11,18 +11,18 @@ pub fn run() -> io::Result<()> {
     // Render
     let part0 = format!("P3\n{} {}\n255\n", image_width, image_height);
 
-    let mut contents = String::from(part0);
+    let mut contents = part0;
 
-    for j in (0..image_height).rev() {
-        eprint!("\rScanlines remaining: {} ", j);
-        for i in 0..image_width {
-            let j = j as f64;
-            let i = i as f64;
-            let w = (image_width - 1) as f64;
-            let h = (image_height - 1) as f64;
+    for row in (0..image_height).rev() {
+        eprint!("\rScanlines remaining: {} ", row);
+        for col in 0..image_width {
+            let row = row as f64;
+            let col = col as f64;
+            let width = (image_width - 1) as f64;
+            let height = (image_height - 1) as f64;
 
-            let r = i / w;
-            let g = j / h;
+            let r = col / width;
+            let g = row / height;
             let b = 0.25;
 
             let ir = (255.999 * r) as i32;
