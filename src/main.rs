@@ -1,6 +1,7 @@
 use std::env;
 use std::io;
 
+mod ray;
 mod vec3;
 
 mod demo;
@@ -14,7 +15,11 @@ fn main() {
         panic!("{}", "USAGE: cargo run {number}");
     }
 
-    let demo: Demo = vec![Box::new(demo::demo00::run), Box::new(demo::demo01::run)];
+    let demo: Demo = vec![
+        Box::new(demo::demo00::run),
+        Box::new(demo::demo01::run),
+        Box::new(demo::demo02::run),
+    ];
 
     let length = demo.len();
 
