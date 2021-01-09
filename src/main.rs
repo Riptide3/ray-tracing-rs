@@ -1,6 +1,8 @@
 use std::env;
 use std::io;
 
+mod vec3;
+
 mod demo;
 
 type Demo = Vec<Box<dyn Fn() -> io::Result<()>>>;
