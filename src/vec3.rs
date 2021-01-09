@@ -1,9 +1,9 @@
-use std::ops;
 use std::io;
+use std::ops;
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy)]
 pub struct Vec3(pub f64, pub f64, pub f64);
-// pub type Point3 = Vec3;
+pub type Point3 = Vec3;
 pub type Color = Vec3;
 
 impl Vec3 {
@@ -39,13 +39,6 @@ impl Vec3 {
         self.0.powi(2) + self.1.powi(2) + self.2.powi(2)
     }
 
-    pub fn write_color<T: io::Write>(&self, out: &mut T) -> io::Result<()> {
-        let s = format!("{} {} {}\n", (255.999 * self.0) as i32,
-                                (255.999 * self.1) as i32, (255.999 * self.2) as i32);
-        out.write_all(s.as_bytes())?;
-        Ok(())
-    }
-
     pub fn dot(&self, v: Vec3) -> f64 {
         let u = self;
         u.0 * v.0 + u.1 * v.1 + u.2 * v.2
@@ -62,6 +55,19 @@ impl Vec3 {
 
     pub fn unit_vector(&self) -> Vec3 {
         *self / self.length()
+    }
+}
+
+impl Color {
+    pub fn write_color<T: io::Write>(&self, out: &mut T) -> io::Result<()> {
+        let s = format!(
+            "{} {} {}\n",
+            (255.999 * self.r()) as i32,
+            (255.999 * self.g()) as i32,
+            (255.999 * self.b()) as i32
+        );
+        out.write_all(s.as_bytes())?;
+        Ok(())
     }
 }
 

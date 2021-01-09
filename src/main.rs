@@ -14,7 +14,7 @@ fn main() {
         panic!("{}", "USAGE: cargo run {number}");
     }
 
-    let demo: Demo = vec![Box::new(demo::demo00::run)];
+    let demo: Demo = vec![Box::new(demo::demo00::run), Box::new(demo::demo01::run)];
 
     let length = demo.len();
 

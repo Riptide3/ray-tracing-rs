@@ -1,7 +1,10 @@
-use std::fs;
+use std::fs::File;
 use std::io;
+use std::io::Write;
 
-const FILENAME: &str = "pic/00.ppm";
+use crate::vec3::Color;
+
+const FILENAME: &str = "pic/01.ppm";
 
 pub fn run() -> io::Result<()> {
     // Image
@@ -10,8 +13,8 @@ pub fn run() -> io::Result<()> {
 
     // Render
     let part0 = format!("P3\n{} {}\n255\n", image_width, image_height);
-
-    let mut contents = part0;
+    let mut f = File::create(FILENAME)?;
+    f.write_all(part0.as_bytes())?;
 
     for row in (0..image_height).rev() {
         eprint!("\rScanlines remaining: {} ", row);
@@ -25,16 +28,11 @@ pub fn run() -> io::Result<()> {
             let g = row / height;
             let b = 0.25;
 
-            let ir = (255.999 * r) as i32;
-            let ig = (255.999 * g) as i32;
-            let ib = (255.999 * b) as i32;
-            let content = format!("{} {} {}\n", ir, ig, ib);
-
-            contents.push_str(&content);
+            let pixel_color = Color { 0: r, 1: g, 2: b };
+            pixel_color.write_color(&mut f)?;
         }
     }
 
-    fs::write(FILENAME, contents.as_bytes())?;
     eprintln!("\nDone.");
     Ok(())
 }
