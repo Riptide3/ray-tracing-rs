@@ -19,6 +19,7 @@ fn main() {
         Box::new(demo::demo00::run),
         Box::new(demo::demo01::run),
         Box::new(demo::demo02::run),
+        Box::new(demo::demo03::run),
     ];
 
     let length = demo.len();
