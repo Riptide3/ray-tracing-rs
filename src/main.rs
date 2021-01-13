@@ -3,6 +3,9 @@ use std::io;
 
 mod ray;
 mod vec3;
+mod hittable;
+mod hittable_list;
+mod sphere;
 
 mod demo;
 
@@ -22,6 +25,7 @@ fn main() {
         Box::new(demo::demo03::run),
         Box::new(demo::demo04::run),
         Box::new(demo::demo05::run),
+        Box::new(demo::demo06::run),
     ];
 
     let length = demo.len();
