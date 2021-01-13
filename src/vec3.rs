@@ -1,5 +1,6 @@
 use std::io;
 use std::ops;
+use crate::utils;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Vec3(pub f64, pub f64, pub f64);
@@ -59,12 +60,17 @@ impl Vec3 {
 }
 
 impl Color {
-    pub fn write_color<T: io::Write>(&self, out: &mut T) -> io::Result<()> {
+    pub fn write_color<T: io::Write>(&self, out: &mut T, samples_per_pixel: i32) -> io::Result<()> {
+        let scale = 1.0 / samples_per_pixel as f64;
+        let r = self.r() * scale;
+        let g = self.g() * scale;
+        let b = self.b() * scale;
+
         let s = format!(
             "{} {} {}\n",
-            (255.999 * self.r()) as i32,
-            (255.999 * self.g()) as i32,
-            (255.999 * self.b()) as i32
+            (256.0 * utils::clamp(r, 0.0, 0.999)) as i32,
+            (256.0 * utils::clamp(g, 0.0, 0.999)) as i32,
+            (256.0 * utils::clamp(b, 0.0, 0.999)) as i32
         );
         out.write_all(s.as_bytes())?;
         Ok(())

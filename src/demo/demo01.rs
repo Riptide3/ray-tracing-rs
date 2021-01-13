@@ -29,7 +29,7 @@ pub fn run() -> io::Result<()> {
             let b = 0.25;
 
             let pixel_color = Color { 0: r, 1: g, 2: b };
-            pixel_color.write_color(&mut f)?;
+            pixel_color.write_color(&mut f, 1)?;
         }
     }
 

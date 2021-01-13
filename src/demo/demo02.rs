@@ -71,7 +71,7 @@ pub fn run() -> io::Result<()> {
             let r = Ray { origin, direction };
 
             let pixel_color = ray_color(r);
-            pixel_color.write_color(&mut f)?;
+            pixel_color.write_color(&mut f, 1)?;
         }
     }
 

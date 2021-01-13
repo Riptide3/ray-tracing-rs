@@ -6,6 +6,8 @@ mod vec3;
 mod hittable;
 mod hittable_list;
 mod sphere;
+mod utils;
+mod camera;
 
 mod demo;
 
@@ -26,6 +28,7 @@ fn main() {
         Box::new(demo::demo04::run),
         Box::new(demo::demo05::run),
         Box::new(demo::demo06::run),
+        Box::new(demo::demo07::run),
     ];
 
     let length = demo.len();

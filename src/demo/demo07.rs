@@ -8,8 +8,10 @@ use crate::hittable_list::HittableList;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::vec3;
+use crate::camera::Camera;
+use crate::utils;
 
-const FILENAME: &str = "pic/06.ppm";
+const FILENAME: &str = "pic/07.ppm";
 
 // 线性插值
 fn lerp(t: f64, start: vec3::Color, end: vec3::Color) -> vec3::Color {
@@ -44,6 +46,7 @@ pub fn run() -> io::Result<()> {
     let aspect_ratio = 16.0 / 9.0;
     let image_width = 400;
     let image_height = (image_width as f64 / aspect_ratio) as i32;
+    let samples_per_pixel = 100;
 
     // World
     let mut world = HittableList::new();
@@ -69,19 +72,7 @@ pub fn run() -> io::Result<()> {
     world.add(Rc::new(sphere_1));
 
     // Camera
-    let viewport_height = 2.0;
-    let viewport_width = aspect_ratio * viewport_height;
-    let focal_length = 1.0;
-
-    let origin = vec3::Point3 {
-        0: 0.0,
-        1: 0.0,
-        2: 0.0,
-    }; // 眼睛位置
-    let horizontal = vec3::Vec3(viewport_width, 0.0, 0.0); // 屏幕水平宽度
-    let vertical = vec3::Vec3(0.0, viewport_height, 0.0); // 屏幕垂直高度
-    let lower_left_corner =
-        origin - horizontal / 2.0 - vertical / 2.0 - vec3::Vec3(0.0, 0.0, focal_length); //视口左下角作为开始位置
+    let cam = Camera::new();
 
     // Render
     let part0 = format!("P3\n{} {}\n255\n", image_width, image_height);
@@ -91,18 +82,18 @@ pub fn run() -> io::Result<()> {
     for row in (0..image_height).rev() {
         eprint!("\rScanlines remaining: {} ", row);
         for col in 0..image_width {
-            let row = row as f64;
-            let col = col as f64;
-            let width = (image_width - 1) as f64;
-            let height = (image_height - 1) as f64;
-
-            let u = col / width;
-            let v = row / height;
-            let direction = lower_left_corner + u * horizontal + v * vertical - origin;
-            let r = Ray { origin, direction };
-
-            let pixel_color = ray_color(&r, &world);
-            pixel_color.write_color(&mut f, 1)?;
+            let mut pixel_color = vec3::Color{
+                0: 0.0,
+                1: 0.0,
+                2: 0.0,
+            };
+            for _ in 0..samples_per_pixel {
+                let u = (col as f64 + utils::random()) / (image_width - 1) as f64;
+                let v = (row as f64 + utils::random()) / (image_height - 1) as f64;
+                let r = cam.get_ray(u, v);
+                pixel_color += ray_color(&r, &world);
+            }
+            pixel_color.write_color(&mut f, samples_per_pixel)?;
         }
     }
 
