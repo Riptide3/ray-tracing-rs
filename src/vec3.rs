@@ -57,14 +57,42 @@ impl Vec3 {
     pub fn unit_vector(&self) -> Vec3 {
         *self / self.length()
     }
+
+    pub fn random() -> Self {
+        Vec3(utils::random(), utils::random(), utils::random())
+    }
+
+    pub fn random_in(min: f64, max: f64) -> Self {
+        Vec3(
+            utils::random_in(min, max),
+            utils::random_in(min, max),
+            utils::random_in(min, max),
+        )
+    }
+
+    pub fn random_in_unit_sphere() -> Self {
+        loop {
+            let p = Vec3::random_in(-1.0, 1.0);
+            if p.length_squared() >= 1.0 {
+                continue;
+            } else {
+                return p;
+            }
+        }
+    }
 }
 
 impl Color {
     pub fn write_color<T: io::Write>(&self, out: &mut T, samples_per_pixel: i32) -> io::Result<()> {
+        let mut r = self.r();
+        let mut g = self.g();
+        let mut b = self.b();
+        
+        //根据样本数对颜色取平均值
         let scale = 1.0 / samples_per_pixel as f64;
-        let r = self.r() * scale;
-        let g = self.g() * scale;
-        let b = self.b() * scale;
+        r = (scale * r).sqrt();
+        g = (scale * g).sqrt();
+        b = (scale * b).sqrt();
 
         let s = format!(
             "{} {} {}\n",
