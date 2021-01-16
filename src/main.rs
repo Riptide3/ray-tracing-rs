@@ -1,13 +1,14 @@
 use std::env;
 use std::io;
 
-mod ray;
-mod vec3;
+mod camera;
 mod hittable;
 mod hittable_list;
+mod material;
+mod ray;
 mod sphere;
 mod utils;
-mod camera;
+mod vec3;
 
 mod demo;
 
@@ -32,6 +33,7 @@ fn main() {
         Box::new(demo::demo08::run),
         Box::new(demo::demo09::run),
         Box::new(demo::demo10::run),
+        Box::new(demo::demo11::run),
     ];
 
     let length = demo.len();

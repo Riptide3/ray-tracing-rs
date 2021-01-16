@@ -1,12 +1,15 @@
+use crate::material::{DefaultMaterial, Material};
 use crate::ray::Ray;
 use crate::vec3;
+use std::rc::Rc;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct HitRecord {
     pub p: vec3::Point3,    //交点
     pub normal: vec3::Vec3, //法向量
     pub t: f64,             //距离
     pub front_face: bool,
+    pub mat_ptr: Rc<dyn Material>,
 }
 
 impl HitRecord {
@@ -20,9 +23,10 @@ impl HitRecord {
             normal: vec3::Vec3(0.0, 0.0, 0.0),
             t: 0.0,
             front_face: false,
+            mat_ptr: Rc::new(DefaultMaterial::new()),
         }
     }
-    pub fn set_face_normal(&mut self, r: &Ray, outward_normal:  vec3::Vec3) {
+    pub fn set_face_normal(&mut self, r: &Ray, outward_normal: vec3::Vec3) {
         self.front_face = r.direction.dot(outward_normal) < 0.0;
         self.normal = if self.front_face {
             outward_normal

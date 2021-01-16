@@ -6,12 +6,13 @@ use std::rc::Rc;
 use crate::camera::Camera;
 use crate::hittable::{HitRecord, Hittable};
 use crate::hittable_list::HittableList;
+use crate::material::{Lambertian, Metal};
 use crate::ray::Ray;
 use crate::sphere::Sphere;
 use crate::utils;
 use crate::vec3;
 
-const FILENAME: &str = "pic/09.ppm";
+const FILENAME: &str = "pic/11.ppm";
 
 // 线性插值
 fn lerp(t: f64, start: vec3::Color, end: vec3::Color) -> vec3::Color {
@@ -29,8 +30,16 @@ fn ray_color<T: Hittable>(r: &Ray, world: &T, depth: u64) -> vec3::Color {
 
     let mut rec = HitRecord::new();
     if world.hit(r, 0.001, f64::INFINITY, &mut rec) {
-        let target = rec.p + rec.normal + vec3::Vec3::random_unit_vector();
-        return 0.5 * ray_color(&Ray::new(rec.p, target - rec.p), world, depth - 1);
+        let mut scattered = Ray::new(vec3::Point3::fill(0.0), vec3::Vec3::fill(0.0));
+        let mut attenuation = vec3::Vec3::fill(0.0);
+        if rec
+            .mat_ptr
+            .scatter(r, &rec, &mut attenuation, &mut scattered)
+        {
+            return attenuation * ray_color(&scattered, world, depth - 1);
+        } else {
+            return vec3::Color::fill(0.0);
+        }
     }
 
     let unit_direction = r.direction.unit_vector(); // 单位化
@@ -61,15 +70,7 @@ pub fn run() -> io::Result<()> {
     // World
     let mut world = HittableList::new();
 
-    let sphere_0 = Sphere::new(
-        vec3::Point3 {
-            0: 0.0,
-            1: 0.0,
-            2: -1.0,
-        },
-        0.5,
-    );
-    let sphere_1 = Sphere::new(
+    let mut sphere_0 = Sphere::new(
         vec3::Point3 {
             0: 0.0,
             1: -100.5,
@@ -77,9 +78,61 @@ pub fn run() -> io::Result<()> {
         },
         100.0,
     );
+    let mut sphere_1 = Sphere::new(
+        vec3::Point3 {
+            0: 0.0,
+            1: 0.0,
+            2: -1.0,
+        },
+        0.5,
+    );
+    let mut sphere_2 = Sphere::new(
+        vec3::Point3 {
+            0: -1.0,
+            1: 0.0,
+            2: -1.0,
+        },
+        0.5,
+    );
+    let mut sphere_3 = Sphere::new(
+        vec3::Point3 {
+            0: 1.0,
+            1: 0.0,
+            2: -1.0,
+        },
+        0.5,
+    );
+
+    let material_ground = Rc::new(Lambertian::new(vec3::Color {
+        0: 0.8,
+        1: 0.8,
+        2: 0.0,
+    }));
+    let material_center = Rc::new(Lambertian::new(vec3::Color {
+        0: 0.7,
+        1: 0.3,
+        2: 0.3,
+    }));
+    let material_left = Rc::new(Metal::new(vec3::Color {
+        0: 0.8,
+        1: 0.8,
+        2: 0.8,
+    }));
+    let material_right = Rc::new(Metal::new(vec3::Color {
+        0: 0.8,
+        1: 0.6,
+        2: 0.2,
+    }));
+
+    sphere_0.mat_ptr = material_ground;
+    sphere_1.mat_ptr = material_center;
+    sphere_2.mat_ptr = material_left;
+    sphere_3.mat_ptr = material_right;
 
     world.add(Rc::new(sphere_0));
     world.add(Rc::new(sphere_1));
+    world.add(Rc::new(sphere_2));
+    world.add(Rc::new(sphere_3));
 
     // Camera
     let cam = Camera::new();

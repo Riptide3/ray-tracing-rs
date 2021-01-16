@@ -1,6 +1,6 @@
+use crate::utils;
 use std::io;
 use std::ops;
-use crate::utils;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Vec3(pub f64, pub f64, pub f64);
@@ -93,6 +93,19 @@ impl Vec3 {
             -in_unit_sphere
         }
     }
+
+    pub fn near_zero(&self) -> bool {
+        let s = 1e-8;
+        self.0.abs() < s && self.1.abs() < s && self.2.abs() < s
+    }
+
+    pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+        v - 2.0 * v.dot(n) * n
+    }
+
+    pub fn fill(v: f64) -> Self {
+        Vec3(v, v, v)
+    }
 }
 
 impl Color {
@@ -100,7 +113,7 @@ impl Color {
         let mut r = self.r();
         let mut g = self.g();
         let mut b = self.b();
-        
+
         //根据样本数对颜色取平均值
         let scale = 1.0 / samples_per_pixel as f64;
         r = (scale * r).sqrt();

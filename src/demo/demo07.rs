@@ -3,13 +3,13 @@ use std::io;
 use std::io::Write;
 use std::rc::Rc;
 
+use crate::camera::Camera;
 use crate::hittable::{HitRecord, Hittable};
 use crate::hittable_list::HittableList;
 use crate::ray::Ray;
 use crate::sphere::Sphere;
-use crate::vec3;
-use crate::camera::Camera;
 use crate::utils;
+use crate::vec3;
 
 const FILENAME: &str = "pic/07.ppm";
 
@@ -82,7 +82,7 @@ pub fn run() -> io::Result<()> {
     for row in (0..image_height).rev() {
         eprint!("\rScanlines remaining: {} ", row);
         for col in 0..image_width {
-            let mut pixel_color = vec3::Color{
+            let mut pixel_color = vec3::Color {
                 0: 0.0,
                 1: 0.0,
                 2: 0.0,
