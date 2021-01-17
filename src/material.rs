@@ -1,9 +1,10 @@
 use std::fmt::Debug;
+use std::rc::Rc;
 
 use crate::hittable::HitRecord;
 use crate::ray::Ray;
+use crate::utils;
 use crate::vec3;
-use std::rc::Rc;
 
 pub trait Material: Debug {
     fn scatter(
@@ -117,6 +118,12 @@ impl Dielectric {
     pub fn new(ir: f64) -> Self {
         Dielectric { ir }
     }
+
+    fn reflectance(consine: f64, ref_idx: f64) -> f64 {
+        let mut r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
+        r0 = r0.powi(2);
+        r0 + (1.0 - r0) * (1.0 - consine).powi(5)
+    }
 }
 
 impl Material for Dielectric {
@@ -139,7 +146,9 @@ impl Material for Dielectric {
         let sin_theta = (1.0 - cos_theta.powi(2)).sqrt();
 
         let cannot_refract = refraction_ratio * sin_theta > 1.0;
-        let direction = if cannot_refract {
+        let direction = if cannot_refract
+            || Dielectric::reflectance(cos_theta, refraction_ratio) > utils::random()
+        {
             vec3::Vec3::reflect(unit_direction, rec.normal)
         } else {
             vec3::Vec3::refract(&unit_direction, &rec.normal, refraction_ratio)
