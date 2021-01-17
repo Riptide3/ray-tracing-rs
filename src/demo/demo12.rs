@@ -12,7 +12,7 @@ use crate::sphere::Sphere;
 use crate::utils;
 use crate::vec3;
 
-const FILENAME: &str = "pic/11.ppm";
+const FILENAME: &str = "pic/12.ppm";
 
 // 线性插值
 fn lerp(t: f64, start: vec3::Color, end: vec3::Color) -> vec3::Color {
@@ -119,7 +119,7 @@ pub fn run() -> io::Result<()> {
             1: 0.8,
             2: 0.8,
         },
-        0.0,
+        0.3,
     ));
     let material_right = Rc::new(Metal::new(
         vec3::Color {
@@ -127,7 +127,7 @@ pub fn run() -> io::Result<()> {
             1: 0.6,
             2: 0.2,
         },
-        0.0,
+        1.0,
     ));
 
     sphere_0.mat_ptr = material_ground;
