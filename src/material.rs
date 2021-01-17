@@ -107,3 +107,40 @@ impl Material for Metal {
         Rc::new(Metal::new(self.albedo, 0.0))
     }
 }
+
+#[derive(Debug, Clone, Copy)]
+pub struct Dielectric {
+    ir: f64, // Index of Refraction
+}
+
+impl Dielectric {
+    pub fn new(ir: f64) -> Self {
+        Dielectric { ir }
+    }
+}
+
+impl Material for Dielectric {
+    fn scatter(
+        &self,
+        r_in: &Ray,
+        rec: &HitRecord,
+        attenuation: &mut vec3::Vec3,
+        scattered: &mut Ray,
+    ) -> bool {
+        *attenuation = vec3::Color::fill(1.0);
+        let refraction_ratio = if rec.front_face {
+            1.0 / self.ir
+        } else {
+            self.ir
+        };
+
+        let unit_direction = vec3::Vec3::unit_vector(&r_in.direction);
+        let refracted = vec3::Vec3::refract(&unit_direction, &rec.normal, refraction_ratio);
+
+        *scattered = Ray::new(rec.p, refracted);
+        true
+    }
+    fn rc_clone(&self) -> Rc<dyn Material> {
+        Rc::new(Dielectric::new(self.ir))
+    }
+}

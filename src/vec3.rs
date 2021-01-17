@@ -58,11 +58,11 @@ impl Vec3 {
         *self / self.length()
     }
 
-    pub fn random() -> Self {
+    pub fn random() -> Vec3 {
         Vec3(utils::random(), utils::random(), utils::random())
     }
 
-    pub fn random_in(min: f64, max: f64) -> Self {
+    pub fn random_in(min: f64, max: f64) -> Vec3 {
         Vec3(
             utils::random_in(min, max),
             utils::random_in(min, max),
@@ -70,7 +70,7 @@ impl Vec3 {
         )
     }
 
-    pub fn random_in_unit_sphere() -> Self {
+    pub fn random_in_unit_sphere() -> Vec3 {
         loop {
             let p = Vec3::random_in(-1.0, 1.0);
             if p.length_squared() >= 1.0 {
@@ -81,11 +81,11 @@ impl Vec3 {
         }
     }
 
-    pub fn random_unit_vector() -> Self {
+    pub fn random_unit_vector() -> Vec3 {
         Vec3::unit_vector(&Vec3::random_in_unit_sphere())
     }
 
-    pub fn random_in_hemisphere(normal: &Vec3) -> Self {
+    pub fn random_in_hemisphere(normal: &Vec3) -> Vec3 {
         let in_unit_sphere = Vec3::random_in_unit_sphere();
         if in_unit_sphere.dot(*normal) > 0.0 {
             in_unit_sphere
@@ -103,8 +103,15 @@ impl Vec3 {
         v - 2.0 * v.dot(n) * n
     }
 
-    pub fn fill(v: f64) -> Self {
+    pub fn fill(v: f64) -> Vec3 {
         Vec3(v, v, v)
+    }
+
+    pub fn refract(uv: &Vec3, n: &Vec3, etai_over_etat: f64) -> Vec3 {
+        let cos_theta = (-*uv).dot(*n).min(1.0);
+        let r_out_perp = etai_over_etat * (*uv + cos_theta * *n);
+        let r_out_parallel = -(1.0 - r_out_perp.length_squared()).abs().sqrt() * *n;
+        r_out_perp + r_out_parallel
     }
 }
 
