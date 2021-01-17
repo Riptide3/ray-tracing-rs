@@ -135,9 +135,17 @@ impl Material for Dielectric {
         };
 
         let unit_direction = vec3::Vec3::unit_vector(&r_in.direction);
-        let refracted = vec3::Vec3::refract(&unit_direction, &rec.normal, refraction_ratio);
+        let cos_theta = (-unit_direction).dot(rec.normal).min(1.0);
+        let sin_theta = (1.0 - cos_theta.powi(2)).sqrt();
 
-        *scattered = Ray::new(rec.p, refracted);
+        let cannot_refract = refraction_ratio * sin_theta > 1.0;
+        let direction = if cannot_refract {
+            vec3::Vec3::reflect(unit_direction, rec.normal)
+        } else {
+            vec3::Vec3::refract(&unit_direction, &rec.normal, refraction_ratio)
+        };
+
+        *scattered = Ray::new(rec.p, direction);
         true
     }
     fn rc_clone(&self) -> Rc<dyn Material> {
