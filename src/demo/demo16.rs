@@ -2,7 +2,7 @@ use std::f64::consts::PI;
 use std::fs::File;
 use std::io;
 use std::io::Write;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::camera::AdjustableFOVCamera;
 use crate::hittable::{HitRecord, Hittable};
@@ -89,12 +89,12 @@ pub fn run() -> io::Result<()> {
         r,
     );
 
-    let material_left = Rc::new(Lambertian::new(vec3::Color {
+    let material_left = Arc::new(Lambertian::new(vec3::Color {
         0: 0.0,
         1: 0.0,
         2: 1.0,
     }));
-    let material_right = Rc::new(Lambertian::new(vec3::Color {
+    let material_right = Arc::new(Lambertian::new(vec3::Color {
         0: 1.0,
         1: 0.0,
         2: 0.0,
@@ -103,8 +103,8 @@ pub fn run() -> io::Result<()> {
     sphere_0.mat_ptr = material_left;
     sphere_1.mat_ptr = material_right;
 
-    world.add(Rc::new(sphere_0));
-    world.add(Rc::new(sphere_1));
+    world.add(Arc::new(sphere_0));
+    world.add(Arc::new(sphere_1));
 
     // Camera
     let cam = AdjustableFOVCamera::new(90.0, aspect_ratio);

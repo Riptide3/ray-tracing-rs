@@ -1,7 +1,7 @@
 use crate::material::{DefaultMaterial, Material};
 use crate::ray::Ray;
 use crate::vec3;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Debug, Clone)]
 pub struct HitRecord {
@@ -9,7 +9,7 @@ pub struct HitRecord {
     pub normal: vec3::Vec3, //法向量
     pub t: f64,             //距离
     pub front_face: bool,
-    pub mat_ptr: Rc<dyn Material>,
+    pub mat_ptr: Arc<dyn Material>,
 }
 
 impl HitRecord {
@@ -23,7 +23,7 @@ impl HitRecord {
             normal: vec3::Vec3(0.0, 0.0, 0.0),
             t: 0.0,
             front_face: false,
-            mat_ptr: Rc::new(DefaultMaterial::new()),
+            mat_ptr: Arc::new(DefaultMaterial::new()),
         }
     }
     pub fn set_face_normal(&mut self, r: &Ray, outward_normal: vec3::Vec3) {
@@ -36,6 +36,6 @@ impl HitRecord {
     }
 }
 
-pub trait Hittable {
+pub trait Hittable: Send + Sync {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool;
 }

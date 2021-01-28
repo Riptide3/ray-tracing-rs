@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io;
 use std::io::Write;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::hittable::{HitRecord, Hittable};
 use crate::hittable_list::HittableList;
@@ -65,8 +65,8 @@ pub fn run() -> io::Result<()> {
         100.0,
     );
 
-    world.add(Rc::new(sphere_0));
-    world.add(Rc::new(sphere_1));
+    world.add(Arc::new(sphere_0));
+    world.add(Arc::new(sphere_1));
 
     // Camera
     let viewport_height = 2.0;

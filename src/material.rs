@@ -1,12 +1,12 @@
 use std::fmt::Debug;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::hittable::HitRecord;
 use crate::ray::Ray;
 use crate::utils;
 use crate::vec3;
 
-pub trait Material: Debug {
+pub trait Material: Debug + Send + Sync {
     fn scatter(
         &self,
         r_in: &Ray,
@@ -14,7 +14,7 @@ pub trait Material: Debug {
         attenuation: &mut vec3::Color,
         scattered: &mut Ray,
     ) -> bool;
-    fn rc_clone(&self) -> Rc<dyn Material>;
+    fn rc_clone(&self) -> Arc<dyn Material>;
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -36,8 +36,8 @@ impl Material for DefaultMaterial {
     ) -> bool {
         false
     }
-    fn rc_clone(&self) -> Rc<dyn Material> {
-        Rc::new(DefaultMaterial::new())
+    fn rc_clone(&self) -> Arc<dyn Material> {
+        Arc::new(DefaultMaterial::new())
     }
 }
 
@@ -70,8 +70,8 @@ impl Material for Lambertian {
         *attenuation = self.albedo;
         true
     }
-    fn rc_clone(&self) -> Rc<dyn Material> {
-        Rc::new(Lambertian::new(self.albedo))
+    fn rc_clone(&self) -> Arc<dyn Material> {
+        Arc::new(Lambertian::new(self.albedo))
     }
 }
 
@@ -104,8 +104,8 @@ impl Material for Metal {
         *attenuation = self.albedo;
         scattered.direction.dot(rec.normal) > 0.0
     }
-    fn rc_clone(&self) -> Rc<dyn Material> {
-        Rc::new(Metal::new(self.albedo, 0.0))
+    fn rc_clone(&self) -> Arc<dyn Material> {
+        Arc::new(Metal::new(self.albedo, 0.0))
     }
 }
 
@@ -157,7 +157,7 @@ impl Material for Dielectric {
         *scattered = Ray::new(rec.p, direction);
         true
     }
-    fn rc_clone(&self) -> Rc<dyn Material> {
-        Rc::new(Dielectric::new(self.ir))
+    fn rc_clone(&self) -> Arc<dyn Material> {
+        Arc::new(Dielectric::new(self.ir))
     }
 }

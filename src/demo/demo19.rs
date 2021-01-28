@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io;
 use std::io::Write;
-use std::rc::Rc;
+use std::sync::Arc;
 
 use crate::camera::LensCamera;
 use crate::hittable::{HitRecord, Hittable};
@@ -111,18 +111,18 @@ pub fn run() -> io::Result<()> {
         0.5,
     );
 
-    let material_ground = Rc::new(Lambertian::new(vec3::Color {
+    let material_ground = Arc::new(Lambertian::new(vec3::Color {
         0: 0.8,
         1: 0.8,
         2: 0.0,
     }));
-    let material_center = Rc::new(Lambertian::new(vec3::Color {
+    let material_center = Arc::new(Lambertian::new(vec3::Color {
         0: 0.1,
         1: 0.2,
         2: 0.5,
     }));
-    let material_left = Rc::new(Dielectric::new(1.5));
-    let material_right = Rc::new(Metal::new(
+    let material_left = Arc::new(Dielectric::new(1.5));
+    let material_right = Arc::new(Metal::new(
         vec3::Color {
             0: 0.8,
             1: 0.6,
@@ -137,11 +137,11 @@ pub fn run() -> io::Result<()> {
     sphere_3.mat_ptr = material_left;
     sphere_4.mat_ptr = material_right;
 
-    world.add(Rc::new(sphere_0));
-    world.add(Rc::new(sphere_1));
-    world.add(Rc::new(sphere_2));
-    world.add(Rc::new(sphere_3));
-    world.add(Rc::new(sphere_4));
+    world.add(Arc::new(sphere_0));
+    world.add(Arc::new(sphere_1));
+    world.add(Arc::new(sphere_2));
+    world.add(Arc::new(sphere_3));
+    world.add(Arc::new(sphere_4));
 
     // Camera
     let lookfrom = vec3::Point3 {

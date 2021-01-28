@@ -1,7 +1,9 @@
 use std::fs::File;
 use std::io;
 use std::io::Write;
+use std::sync::mpsc::channel;
 use std::sync::Arc;
+use threadpool::ThreadPool;
 
 use crate::camera::LensCamera;
 use crate::hittable::{HitRecord, Hittable};
@@ -12,7 +14,7 @@ use crate::sphere::Sphere;
 use crate::utils;
 use crate::vec3;
 
-const FILENAME: &str = "pic/20.ppm";
+const FILENAME: &str = "pic/21.ppm";
 
 // 线性插值
 fn lerp(t: f64, start: vec3::Color, end: vec3::Color) -> vec3::Color {
@@ -172,16 +174,19 @@ fn random_scene() -> HittableList {
     world
 }
 
+type PixelColors = Vec<vec3::Color>;
+
 pub fn run() -> io::Result<()> {
     // Image
     let aspect_ratio = 3.0 / 2.0;
     let image_width = 1200;
     let image_height = (image_width as f64 / aspect_ratio) as i32;
+    let image_size = (image_width * image_height) as usize;
     let samples_per_pixel = 500;
     let max_depth = 50;
 
     // World
-    let world = random_scene();
+    let world = Arc::new(random_scene());
 
     // Camera
     let lookfrom = vec3::Point3 {
@@ -197,7 +202,7 @@ pub fn run() -> io::Result<()> {
     let vup = vec3::Vec3(0.0, 1.0, 0.0);
     let dist_to_focus = 10.0;
     let aperture = 0.1;
-    let cam = LensCamera::new(
+    let cam = Arc::new(LensCamera::new(
         lookfrom,
         lookat,
         vup,
@@ -205,29 +210,50 @@ pub fn run() -> io::Result<()> {
         aspect_ratio,
         aperture,
         dist_to_focus,
-    );
+    ));
+
+    // multithreading
+    let pool = ThreadPool::new(6);
+    let (sender, receiver) = channel::<PixelColors>();
 
     // Render
     let part0 = format!("P3\n{} {}\n255\n", image_width, image_height);
     let mut f = File::create(FILENAME)?;
     f.write_all(part0.as_bytes())?;
 
-    for row in (0..image_height).rev() {
-        eprint!("\rScanlines remaining: {} ", row);
-        for col in 0..image_width {
-            let mut pixel_color = vec3::Color {
-                0: 0.0,
-                1: 0.0,
-                2: 0.0,
-            };
-            for _ in 0..samples_per_pixel {
-                let u = (col as f64 + utils::random()) / (image_width - 1) as f64;
-                let v = (row as f64 + utils::random()) / (image_height - 1) as f64;
-                let r = cam.get_ray(u, v);
-                pixel_color += ray_color(&r, &world, max_depth);
+    for _ in 0..samples_per_pixel {
+        let sender = sender.clone();
+        let world = world.clone();
+        let cam = cam.clone();
+        let tracing = move || {
+            let mut ray_colors = PixelColors::with_capacity(image_size);
+            for row in (0..image_height).rev() {
+                eprint!("\rScanlines remaining: {} ", row);
+                for col in 0..image_width {
+                    let u = (col as f64 + utils::random()) / (image_width - 1) as f64;
+                    let v = (row as f64 + utils::random()) / (image_height - 1) as f64;
+                    let r = cam.get_ray(u, v);
+                    ray_colors.push(ray_color(&r, &*world, max_depth));
+                }
             }
-            pixel_color.write_color(&mut f, samples_per_pixel)?;
+            sender.send(ray_colors).expect("Ray tracing failed!");
+        };
+        pool.execute(tracing);
+    }
+
+    let mut pixel_colors = PixelColors::with_capacity(image_size);
+    for _ in 0..image_size {
+        pixel_colors.push(vec3::Color::fill(0.0));
+    }
+
+    for ray_colors in receiver.iter().take(samples_per_pixel as usize) {
+        for (i, pixel_color) in pixel_colors.iter_mut().enumerate() {
+            *pixel_color += ray_colors[i];
         }
+    }
+
+    for pixel_color in pixel_colors {
+        pixel_color.write_color(&mut f, samples_per_pixel)?;
     }
 
     eprintln!("\nDone.");
